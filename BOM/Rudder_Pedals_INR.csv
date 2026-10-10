@@ -1,0 +1,19 @@
+Category,Component,Quantity,Unit / Pack Price (INR),Line Total (INR),Where to Buy (India),Notes
+Electronics,"Arduino Pro Micro ATmega32U4 5V/16MHz, USB-C",1,550,550,Probots / Robu / Robocraze / Amazon.in,
+Electronics,Neodymium disc magnet 10x5 mm (N52),1 (1 pack of 10),220,220,Amazon.in / Robu,
+Electronics,Neodymium disc magnet 5x2 mm (N52),4 (1 pack of 20),150,150,Amazon.in / Robu,
+Electronics,SS49E linear Hall-effect sensor,3 (1 pack of 10),150,150,Robu / Robocraze / Electronicscomp,
+Hardware,"30 mm tension spring (OD 5 mm, wire 0.8 mm), pack of 10",1,120,120,Amazon.in / local spring shop,
+Hardware,"30 mm tension spring (OD 7-8 mm, wire 1.2-1.5 mm), pack of 10",1,150,150,Amazon.in / local spring shop,
+Hardware,608ZZ bearing (8x22x7 mm),4,35,140,Robu / local bearing shop,Qty estimated (upstream: TBD)
+Hardware,KFL08 2-bolt flange bearing (8 mm bore),2,150,300,Robu / Amazon.in,Qty estimated (upstream: TBD)
+Hardware,M4x16 mm self-tapping screw (pack of 50),1,100,100,Local hardware shop / Amazon.in,
+Hardware,M5 nut,12,2,24,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,"M5 threaded rod, 1 m (cut to 60 mm pieces)",1,80,80,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,M5x25 mm SS bolt,4,10,40,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,M5x35 mm SS bolt,4,12,48,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,M8 nut,12,3,36,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,"M8 threaded rod, 1 m (cut to length)",1,120,120,Local hardware shop,Qty estimated (upstream: TBD)
+Hardware,SI5T/K rod-end bearing (M5),2,120,240,Amazon.in / local bearing shop,Qty estimated (upstream: TBD)
+Hardware,Self-tapping screw kit M2/M2.5/M3 (5-16 mm assortment),1,450,450,Amazon.in / local hardware shop,
+,"TOTAL (parts only, approx.)",,,2918,,
