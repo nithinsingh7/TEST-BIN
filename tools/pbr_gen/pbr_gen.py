@@ -52,7 +52,15 @@ import requests
 from PIL import Image, ImageDraw, ImageFilter
 
 API_URL = "https://openrouter.ai/api/v1/images"
-DEFAULT_MODEL = "openai/gpt-image-2.5-sunburst"
+# Two tiers, picked from the October 2026 plant benchmark (examples/plant_bench):
+#   standard - all-rounder: fast, cheapest, nearly GPT quality (no native transparency; cutouts are keyed)
+#   hq       - hero assets: most realistic maps, native transparency, ~1.5x the cost and ~2x the time
+TIERS = {
+    "standard": {"model": "google/gemini-nano-banana-2.1", "albedo_quality": "high", "quality": "high"},
+    "hq":       {"model": "openai/gpt-image-2.5-sunburst", "albedo_quality": "max",  "quality": "high"},
+}
+DEFAULT_TIER = "standard"
+DEFAULT_MODEL = TIERS[DEFAULT_TIER]["model"]
 QUALITIES = ["auto", "low", "medium", "high", "xhigh", "max"]
 DEFAULT_MAPS = {"cutout": "height,normal,roughness,ao,translucency",
                 "tileable": "height,normal,roughness,ao"}
@@ -445,7 +453,7 @@ def step_albedo(args, files: dict, manifest: dict) -> None:
     if args.kind == "cutout" and not has_alpha(img) and supports(args.model, "background", "transparent"):
         manifest["warnings"].append("albedo came back without transparency; mask was keyed from the background color")
     prepare_albedo(img, out, args.kind, files)
-    manifest["albedo"] = {"prompt": prompt, "cost": cost, "seconds": round(_stats.seconds, 1),
+    manifest["albedo"] = {"prompt": prompt, "cost": cost, "seconds": round(getattr(_stats, "seconds", 0.0), 1),
                           "size": img.size}
 
 
@@ -479,7 +487,7 @@ def step_maps(args, files: dict, manifest: dict) -> None:
         for attempt in range(1, args.retries + 2):
             img, cost = call_image_api(prompt, model=args.model, quality=args.quality, refs=[ref],
                                        resolution=args.resolution)
-            spent[0] += cost; spent[1] += _stats.seconds
+            spent[0] += cost; spent[1] += getattr(_stats, "seconds", 0.0)
             img.convert("RGB").save(out / f"{key}_raw{'' if attempt == 1 else attempt}.png")
             img = img.convert("RGB").resize(size, Image.LANCZOS)
             if kind == "tileable":   # nothing to fit against; the reference is full-frame
@@ -566,9 +574,11 @@ def main() -> int:
     ap.add_argument("--albedo", help="use this albedo image instead of generating one")
     ap.add_argument("--maps", help="comma list from: " + ", ".join(MAP_SPECS) +
                     f". Default cutout: {DEFAULT_MAPS['cutout']}; tileable: {DEFAULT_MAPS['tileable']}")
-    ap.add_argument("--model", default=DEFAULT_MODEL)
-    ap.add_argument("--albedo-quality", default="max", choices=QUALITIES)
-    ap.add_argument("--quality", default="high", choices=QUALITIES, help="quality for the derived maps")
+    ap.add_argument("--tier", choices=list(TIERS), default=DEFAULT_TIER,
+                    help="standard = Nano Banana 2.1 (all-rounder, default); hq = GPT Image 2.5 Sunburst (hero assets)")
+    ap.add_argument("--model", help="override the tier's model with any OpenRouter image model id")
+    ap.add_argument("--albedo-quality", choices=QUALITIES, help="default: the tier's setting")
+    ap.add_argument("--quality", choices=QUALITIES, help="quality for the derived maps (default: the tier's setting)")
     ap.add_argument("--resolution", default="1K", help="1K, 2K or 4K, for models that accept it (not GPT Image)")
     ap.add_argument("--retries", type=int, default=1, help="extra attempts when a cutout map doesn't line up")
     ap.add_argument("--min-iou", type=float, default=0.93, help="silhouette IoU (after auto-fit) to accept a map")
@@ -579,9 +589,13 @@ def main() -> int:
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
     manifest = read_manifest(out)
+    tier = TIERS[args.tier]
+    args.model = args.model or tier["model"]
+    args.albedo_quality = args.albedo_quality or tier["albedo_quality"]
+    args.quality = args.quality or tier["quality"]
     args.kind = args.kind or manifest.get("kind") or "cutout"
     args.maps = args.maps or DEFAULT_MAPS[args.kind]
-    manifest.update(kind=args.kind, model=args.model, subject=args.subject if args.step != "maps"
+    manifest.update(kind=args.kind, tier=args.tier, model=args.model, subject=args.subject if args.step != "maps"
                     else manifest.get("subject", args.subject))
     manifest.setdefault("maps", {})
     manifest["warnings"] = []
@@ -606,7 +620,8 @@ def main() -> int:
 
     if args.json:
         print(json.dumps({
-            "ok": ok, "error": error, "kind": args.kind, "out": str(out.resolve()),
+            "ok": ok, "error": error, "tier": args.tier, "model": args.model, "kind": args.kind,
+            "out": str(out.resolve()),
             "manifest": str((out / "manifest.json").resolve()),
             "files": manifest["files"], "warnings": manifest["warnings"],
             "cost_usd": round(_total_cost[0], 4),

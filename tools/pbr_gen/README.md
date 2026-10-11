@@ -9,11 +9,25 @@ pip install -r requirements.txt
 export OPENROUTER_API_KEY=sk-or-...     # never commit the key; read it from the environment
 ```
 
+## Choosing a tier
+
+| Tier | Model | Use for | Cost per material* | Time per material* |
+|---|---|---|---|---|
+| `--tier standard` (default) | Nano Banana 2.1 (`google/gemini-nano-banana-2.1`) | Everything by default: props, background and mid-ground assets, iteration | ~$0.12–0.16 | ~40–50 s |
+| `--tier hq` | GPT Image 2.5 Sunburst (`openai/gpt-image-2.5-sunburst`) | Hero assets, close-ups, foliage that needs clean alpha edges | ~$0.18–0.24 | ~75–115 s |
+
+\*Measured in `examples/plant_bench` (1K, albedo + 2–3 maps, `high` quality). `hq` uses `max`
+quality for the albedo, which costs somewhat more than those figures.
+
+Standard can't do native transparency, so cutouts are generated on black and keyed out. That
+works well for clean silhouettes like leaves; use `hq` when edges must be perfect (hair, fur,
+lace, smoke). `--model <id>` still overrides either tier.
+
 ## For agents: the two calls
 
 ```bash
 # 1. make the textures (progress on stderr, one JSON result line on stdout)
-python pbr_gen.py all --kind cutout   --subject "a fresh green hydrangea leaf" --out tex/leaf --json
+python pbr_gen.py all --kind cutout   --subject "a fresh green hydrangea leaf" --out tex/leaf --json --tier hq
 python pbr_gen.py all --kind tileable --subject "weathered oak bark" --out tex/bark --json
 python pbr_gen.py all --kind tileable --subject "rusty painted steel plate" \
     --maps height,normal,roughness,ao,metallic \
