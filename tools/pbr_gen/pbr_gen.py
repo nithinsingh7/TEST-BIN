@@ -157,15 +157,46 @@ def _data_url(img: Image.Image) -> str:
     return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
 
 
+_params_cache: dict[str, dict] = {}
+_stats = threading.local()
+
+
+def model_params(model: str) -> dict:
+    """Parameters the model's endpoints accept, e.g. {"quality": [...], "background": [...], ...}."""
+    if model not in _params_cache:
+        url = f"https://openrouter.ai/api/v1/images/models/{model}/endpoints"
+        try:
+            eps = requests.get(url, timeout=30).json().get("endpoints", [])
+        except (requests.RequestException, ValueError):
+            eps = []
+        merged: dict = {}
+        for e in eps:
+            for k, v in (e.get("supported_parameters") or {}).items():
+                merged.setdefault(k, v)
+        _params_cache[model] = merged
+    return _params_cache[model]
+
+
+def supports(model: str, param: str, value=None) -> bool:
+    spec = model_params(model).get(param)
+    if spec is None:
+        return False
+    return value is None or "values" not in spec or value in spec["values"]
+
+
 def call_image_api(prompt: str, *, model: str, quality: str, background: str | None = None,
-                   refs: list[Image.Image] | None = None, retries: int = 4) -> tuple[Image.Image, float]:
-    """POST /api/v1/images. Returns (image, cost_usd)."""
+                   refs: list[Image.Image] | None = None, resolution: str | None = None,
+                   retries: int = 4) -> tuple[Image.Image, float]:
+    """POST /api/v1/images. Returns (image, cost_usd). Only sends parameters the model accepts.
+    The wall-clock seconds of the successful call are left in _stats.seconds."""
     key = os.environ.get("OPENROUTER_API_KEY")
     if not key:
         raise ApiError("Set the OPENROUTER_API_KEY environment variable.")
-    body: dict = {"model": model, "prompt": prompt, "aspect_ratio": "1:1", "quality": quality, "n": 1}
-    if background:
-        body["background"] = background
+    body: dict = {"model": model, "prompt": prompt, "n": 1}
+    for k, v in (("aspect_ratio", "1:1"), ("quality", quality), ("background", background),
+                 ("resolution", resolution)):
+        if v and supports(model, k, v):
+            body[k] = v
     if refs:
         body["input_references"] = [{"type": "image_url", "image_url": {"url": _data_url(r)}} for r in refs]
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json",
@@ -173,6 +204,7 @@ def call_image_api(prompt: str, *, model: str, quality: str, background: str | N
 
     err = "no attempt made"
     for attempt in range(retries + 1):
+        t0 = time.time()
         try:
             r = requests.post(API_URL, headers=headers, json=body, timeout=900)
         except requests.RequestException as e:
@@ -188,6 +220,7 @@ def call_image_api(prompt: str, *, model: str, quality: str, background: str | N
                 cost = float((payload.get("usage") or {}).get("cost") or 0.0)
                 with _cost_lock:
                     _total_cost[0] += cost
+                _stats.seconds = time.time() - t0
                 return Image.open(io.BytesIO(raw)).copy(), cost
             err = f"HTTP {r.status_code}: {r.text[:500]}"
             if r.status_code in (400, 401, 402, 403, 413):
@@ -237,7 +270,7 @@ def clean_mask(m: np.ndarray, open_px: int = 3, erode_px: int = 1) -> np.ndarray
     if open_px:
         k = open_px * 2 + 1
         im = im.filter(ImageFilter.MinFilter(k)).filter(ImageFilter.MaxFilter(k))  # opening
-        im = im.filter(ImageFilter.MaxFilter(k)).filter(ImageFilter.MinFilter(k))  # closing
+        im = im.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))  # light closing (keeps gaps between leaflets)
     # fill interior holes: flood the background from the border, everything not reached is object
     padded = Image.new("L", (im.width + 2, im.height + 2), 0)
     padded.paste(im, (1, 1))
@@ -400,14 +433,20 @@ def step_albedo(args, files: dict, manifest: dict) -> None:
     if args.notes:
         prompt += " Material notes: " + args.notes
     bg = "transparent" if args.kind == "cutout" else "opaque"
-    log(f"-> albedo ({args.kind}, quality={args.albedo_quality})")
-    img, cost = call_image_api(prompt, model=args.model, quality=args.albedo_quality, background=bg)
+    if args.kind == "cutout" and not supports(args.model, "background", "transparent"):
+        prompt = prompt.replace("Isolated on a fully transparent background.",
+                                "Isolated on a pure, flat black background (#000000) with nothing else in the frame.")
+        log("   model has no transparent background; asking for pure black and keying it out")
+    log(f"-> albedo ({args.kind}, {args.model}, quality={args.albedo_quality})")
+    img, cost = call_image_api(prompt, model=args.model, quality=args.albedo_quality, background=bg,
+                               resolution=args.resolution)
     img.save(out / "albedo_raw.png")
     log(f"   {img.size[0]}x{img.size[1]} {img.mode}, ${cost:.3f}")
-    if args.kind == "cutout" and not has_alpha(img):
+    if args.kind == "cutout" and not has_alpha(img) and supports(args.model, "background", "transparent"):
         manifest["warnings"].append("albedo came back without transparency; mask was keyed from the background color")
     prepare_albedo(img, out, args.kind, files)
-    manifest["albedo"] = {"prompt": prompt, "cost": cost, "size": img.size}
+    manifest["albedo"] = {"prompt": prompt, "cost": cost, "seconds": round(_stats.seconds, 1),
+                          "size": img.size}
 
 
 def step_maps(args, files: dict, manifest: dict) -> None:
@@ -436,8 +475,11 @@ def step_maps(args, files: dict, manifest: dict) -> None:
         prompt = map_prompt(key, kind, args.notes)
         _, bg, gray = MAP_SPECS[key]
         best = None
+        spent = [0.0, 0.0]
         for attempt in range(1, args.retries + 2):
-            img, cost = call_image_api(prompt, model=args.model, quality=args.quality, refs=[ref])
+            img, cost = call_image_api(prompt, model=args.model, quality=args.quality, refs=[ref],
+                                       resolution=args.resolution)
+            spent[0] += cost; spent[1] += _stats.seconds
             img.convert("RGB").save(out / f"{key}_raw{'' if attempt == 1 else attempt}.png")
             img = img.convert("RGB").resize(size, Image.LANCZOS)
             if kind == "tileable":   # nothing to fit against; the reference is full-frame
@@ -457,16 +499,17 @@ def step_maps(args, files: dict, manifest: dict) -> None:
             if score >= args.min_iou:
                 break
         img, score = best
-        return key, finalize(key, img, mask, bg, gray, kind), score, prompt
+        return key, finalize(key, img, mask, bg, gray, kind), score, prompt, spent
 
     log(f"-> generating {', '.join(keys)} ({args.quality}) from the albedo reference")
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         results = list(pool.map(one, keys))
 
     maps = {}
-    for key, img, score, prompt in results:
+    for key, img, score, prompt, spent in results:
         save(img, out, key, files); maps[key] = img
-        manifest["maps"][key] = {"prompt": prompt, "alignment_score": None if score is None else round(score, 4)}
+        manifest["maps"][key] = {"prompt": prompt, "alignment_score": None if score is None else round(score, 4),
+                                 "cost": round(spent[0], 4), "seconds": round(spent[1], 1)}
         if score is not None and score < args.min_iou:
             manifest["warnings"].append(f"{key}: alignment score {score:.3f} is below {args.min_iou}; "
                                         f"inspect {key}.png or use the *_from_height maps")
@@ -526,6 +569,7 @@ def main() -> int:
     ap.add_argument("--model", default=DEFAULT_MODEL)
     ap.add_argument("--albedo-quality", default="max", choices=QUALITIES)
     ap.add_argument("--quality", default="high", choices=QUALITIES, help="quality for the derived maps")
+    ap.add_argument("--resolution", default="1K", help="1K, 2K or 4K, for models that accept it (not GPT Image)")
     ap.add_argument("--retries", type=int, default=1, help="extra attempts when a cutout map doesn't line up")
     ap.add_argument("--min-iou", type=float, default=0.93, help="silhouette IoU (after auto-fit) to accept a map")
     ap.add_argument("--workers", type=int, default=3, help="parallel API calls")
