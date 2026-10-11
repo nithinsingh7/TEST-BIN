@@ -6,8 +6,9 @@ from PIL import Image, ImageFilter
 
 SETS, OUT = Path(sys.argv[1]), Path(sys.argv[2])
 MODELS = {"gpt": "GPT Image 2.5 Sunburst", "gemini": "Nano Banana 2.1", "flux": "FLUX 3", "qwen": "Qwen Image 3 Pro"}
-MATS = ["leaf", "bud", "stem", "soil"]
+MATS = ["leaf", "sugar", "bud", "stem", "soil"]
 EXPORT = {"leaf": ["albedo", "opacity", "roughness", "normal_from_height", "translucency", "height"],
+          "sugar": ["albedo", "opacity", "roughness", "normal_from_height", "translucency", "height"],
           "bud": ["albedo", "roughness", "normal_from_height", "ao_from_height", "height"],
           "stem": ["albedo", "roughness", "normal_from_height", "ao_from_height", "height"],
           "soil": ["albedo", "roughness", "normal_from_height", "ao_from_height", "height"]}
@@ -57,13 +58,13 @@ for mk in MODELS:
             entry["api_seconds"] = round(sum(c.get("seconds", 0) or 0 for c in calls), 1)
             entry["images"] = len(calls)
             mask = None
-            if mat == "leaf":
+            if mat in ("leaf", "sugar"):
                 mask = (np.asarray(Image.open(d / "opacity.png").convert("L")) > 127).astype(np.uint8)
                 entry["silhouette"] = {k: v.get("alignment_score") for k, v in man["maps"].items()}
             raw = {k: d / f"{k}_raw.png" for k in man.get("maps", {})}
             entry["structure"] = {k: round(structure_match(d / "reference.png", p, mask), 3)
                                   for k, p in raw.items() if p.exists() and k in ("height", "roughness")}
-            if mat != "leaf":
+            if mat not in ("leaf", "sugar"):
                 entry["seam_ratio_raw"] = round(seam_ratio(d / "albedo_raw.png"), 2)
             tot_cost += entry["cost"]; tot_time += entry["wall_seconds"] or 0; n_img += entry["images"]
             dst = OUT / mk / mat; dst.mkdir(parents=True, exist_ok=True)

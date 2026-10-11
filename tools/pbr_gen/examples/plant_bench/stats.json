@@ -25,19 +25,37 @@
      "roughness": 0.806
     }
    },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 73.8,
+    "warnings": [],
+    "cost": 0.2389,
+    "api_seconds": 133.6,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9886,
+     "roughness": 0.9863,
+     "translucency": 0.9918
+    },
+    "structure": {
+     "height": 0.762,
+     "roughness": 0.829
+    }
+   },
    "bud": {
     "ok": true,
     "error": null,
-    "wall_seconds": 116.6,
+    "wall_seconds": 114.7,
     "warnings": [],
-    "cost": 0.177,
-    "api_seconds": 153.3,
+    "cost": 0.1771,
+    "api_seconds": 155.4,
     "images": 3,
     "structure": {
-     "height": 0.824,
-     "roughness": 0.881
+     "height": 0.87,
+     "roughness": 0.867
     },
-    "seam_ratio_raw": 1.84
+    "seam_ratio_raw": 1.34
    },
    "stem": {
     "ok": true,
@@ -87,19 +105,37 @@
      "roughness": 0.955
     }
    },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 49.9,
+    "warnings": [],
+    "cost": 0.1587,
+    "api_seconds": 79.5,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9941,
+     "roughness": 0.9936,
+     "translucency": 0.994
+    },
+    "structure": {
+     "height": 0.838,
+     "roughness": 0.731
+    }
+   },
    "bud": {
     "ok": true,
     "error": null,
-    "wall_seconds": 53.3,
+    "wall_seconds": 41.8,
     "warnings": [],
-    "cost": 0.1178,
-    "api_seconds": 60.8,
+    "cost": 0.1166,
+    "api_seconds": 50.0,
     "images": 3,
     "structure": {
-     "height": 0.833,
-     "roughness": 0.84
+     "height": 0.748,
+     "roughness": 0.96
     },
-    "seam_ratio_raw": 1.31
+    "seam_ratio_raw": 2.04
    },
    "stem": {
     "ok": true,
@@ -149,19 +185,37 @@
      "roughness": 0.786
     }
    },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 203.3,
+    "warnings": [],
+    "cost": 0.192,
+    "api_seconds": 203.3,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9839,
+     "roughness": 0.9922,
+     "translucency": 0.9918
+    },
+    "structure": {
+     "height": 0.895,
+     "roughness": 0.682
+    }
+   },
    "bud": {
     "ok": true,
     "error": null,
-    "wall_seconds": 116.7,
+    "wall_seconds": 127.2,
     "warnings": [],
     "cost": 0.144,
-    "api_seconds": 158.7,
+    "api_seconds": 127.2,
     "images": 3,
     "structure": {
-     "height": 0.978,
-     "roughness": 0.983
+     "height": 0.977,
+     "roughness": 0.979
     },
-    "seam_ratio_raw": 2.42
+    "seam_ratio_raw": 2.99
    },
    "stem": {
     "ok": true,
@@ -211,19 +265,37 @@
      "roughness": 0.895
     }
    },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 142.5,
+    "warnings": [],
+    "cost": 0.169,
+    "api_seconds": 254.9,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9746,
+     "roughness": 0.9758,
+     "translucency": 0.9614
+    },
+    "structure": {
+     "height": 0.957,
+     "roughness": 0.672
+    }
+   },
    "bud": {
     "ok": true,
     "error": null,
-    "wall_seconds": 120.2,
+    "wall_seconds": 142.3,
     "warnings": [],
     "cost": 0.126,
-    "api_seconds": 175.8,
+    "api_seconds": 221.3,
     "images": 3,
     "structure": {
-     "height": 0.958,
-     "roughness": 0.947
+     "height": 0.847,
+     "roughness": 0.926
     },
-    "seam_ratio_raw": 2.87
+    "seam_ratio_raw": 2.74
    },
    "stem": {
     "ok": true,
@@ -257,24 +329,24 @@
  },
  "totals": {
   "gpt": {
-   "cost": 0.7695,
-   "wall_seconds": 408.0,
-   "images": 13
+   "cost": 1.0085,
+   "wall_seconds": 479.9,
+   "images": 17
   },
   "gemini": {
-   "cost": 0.5007,
-   "wall_seconds": 189.8,
-   "images": 13
+   "cost": 0.6582,
+   "wall_seconds": 228.2,
+   "images": 17
   },
   "flux": {
-   "cost": 0.624,
-   "wall_seconds": 344.2,
-   "images": 13
+   "cost": 0.816,
+   "wall_seconds": 558.0,
+   "images": 17
   },
   "qwen": {
-   "cost": 0.59,
-   "wall_seconds": 526.1,
-   "images": 13
+   "cost": 0.759,
+   "wall_seconds": 690.7,
+   "images": 17
   }
  }
 }

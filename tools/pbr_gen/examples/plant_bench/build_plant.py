@@ -8,7 +8,7 @@ OUT = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "plant.glb"
 rng = np.random.default_rng(42)
 TILE = 0.12           # meters per texture repeat on stems/buds/soil
 
-geo = {k: {"v": [], "f": [], "uv": []} for k in ("stem", "leaf", "bud", "soil", "pot")}
+geo = {k: {"v": [], "f": [], "uv": []} for k in ("stem", "leaf", "sugar", "bud", "pistil", "pistil_w", "soil", "pot")}
 
 
 def add(group, verts, faces, uvs):
@@ -53,39 +53,70 @@ def bezier(p0, p1, p2, steps=14):
     return (1 - t) ** 2 * p0 + 2 * (1 - t) * t * p1 + t ** 2 * p2
 
 
-def bud(base, axis, length, radius, ru=20, rv=22):
-    """Lumpy cola: elongated body with calyx-like bumps."""
-    axis = axis / np.linalg.norm(axis); nn, bb = frame(axis)
-    bumps = [(rng.uniform(0, 2 * math.pi), rng.uniform(0.05, 0.95), rng.uniform(0.18, 0.32))
-             for _ in range(int(30 + 120 * length))]
+NUG_TILE = 0.035      # bud texture repeat (m): calyx-scale detail on each nug
+GOLDEN = math.pi * (3 - math.sqrt(5))
+
+
+def nug(center, direction, size, ru=6, rv=5):
+    """One calyx cluster: a teardrop pointing along `direction`, with small calyx bumps."""
+    d = direction / np.linalg.norm(direction); nn, bb = frame(d)
+    phase = rng.uniform(0, 2 * math.pi)
     verts, uvs, faces = [], [], []
     for j in range(rv + 1):
-        v = j / rv
-        prof = math.sin(math.pi * min(1, v * 0.9 + 0.06)) ** 0.55 * (1 - 0.35 * v)   # pointier tip
+        v = j / rv                                   # 0 = base, 1 = tip
+        prof = (math.sin(math.pi * min(1.0, v * 1.1)) ** 0.7) * (1 - 0.55 * v ** 1.5) + 0.02
         for i in range(ru + 1):
             a = 2 * math.pi * i / ru
-            lump = 0.0
-            for (ba, bv, bs) in bumps:
-                da = min(abs(a - ba), 2 * math.pi - abs(a - ba)) / math.pi
-                d2 = (da * radius * 3.0) ** 2 + ((v - bv) * length) ** 2
-                lump += math.exp(-d2 / (bs * radius) ** 2)
-            r = radius * prof * (0.78 + 0.22 * min(lump, 1.6))
-            verts.append(base + axis * (v * length) + r * (math.cos(a) * nn + math.sin(a) * bb))
-            uvs.append((i / ru * max(1, round(2 * math.pi * radius / TILE)), v * length / TILE))
+            bump = 1 + 0.18 * math.sin(3 * a + phase) * math.sin(math.pi * v * 2.5)
+            r = size * 0.62 * prof * bump
+            verts.append(center + d * ((v - 0.35) * size * 1.5) + r * (math.cos(a) * nn + math.sin(a) * bb))
+            uvs.append((i / ru * 2 * math.pi * size * 0.62 / NUG_TILE, v * size * 1.5 / NUG_TILE))
     for j in range(rv):
         for i in range(ru):
             a = j * (ru + 1) + i; b = a + ru + 1
             faces.append((a, a + 1, b + 1, b))
     add("bud", verts, faces, uvs)
-    # sugar leaves poking out
-    for _ in range(int(3 + 22 * length)):
-        v = rng.uniform(0.15, 0.85); a = rng.uniform(0, 2 * math.pi)
+    # pistils: thin curly orange hairs from the nug tip area
+    for _ in range(rng.integers(2, 5)):
+        root = center + d * size * 0.55 + (rng.normal(size=3) * size * 0.12)
+        out = d + rng.normal(size=3) * 0.8; out /= np.linalg.norm(out)
+        side = np.cross(out, rng.normal(size=3)); side /= np.linalg.norm(side)
+        L = size * rng.uniform(1.0, 2.0)
+        pts = bezier(root, root + out * L * 0.55 + side * L * 0.45, root + out * L * 0.8 - side * L * 0.35, 4)
+        tube("pistil_w" if rng.random() < 0.55 else "pistil", pts, np.linspace(0.0006, 0.00025, 4), sides=3)
+
+
+def bud(base, axis, length, radius):
+    """Cola: a spine packed with calyx nugs in a phyllotaxis spiral, pistils and sugar leaves."""
+    axis = axis / np.linalg.norm(axis); nn, bb = frame(axis)
+    # thin core so gaps between nugs never show through
+    core = [base + axis * (length * t) for t in np.linspace(0, 0.92, 8)]
+    tube("bud", core, [radius * 0.55 * (1 - 0.6 * t) for t in np.linspace(0, 1, 8)], sides=8)
+    n = int(18 + 4200 * length * radius)
+    for k in range(n):
+        v = (k + 0.5) / n
+        v = v ** 0.85                                # a little denser toward the tip
+        prof = math.sin(math.pi * min(1, v * 0.88 + 0.08)) ** 0.5 * (1 - 0.4 * v)
+        v = min(0.97, max(0.0, v + rng.normal(0, 0.02)))
+        a = k * GOLDEN + rng.normal(0, 0.35)
         out = math.cos(a) * nn + math.sin(a) * bb
-        p = base + axis * (v * length) + out * radius * 0.6
-        leaf_card(p, out * 0.8 + axis * 0.7, size=rng.uniform(0.045, 0.075), droop=0.1, roll=rng.uniform(-1, 1))
+        size = radius * rng.uniform(0.26, 0.5) * (0.5 + 0.5 * prof)
+        center = base + axis * (v * length) + out * radius * prof * rng.uniform(0.45, 0.75)
+        nug(center, out * 0.75 + axis * 0.85 + rng.normal(size=3) * 0.15, size)
+    # crown nug on the tip
+    nug(base + axis * length * 0.97, axis, radius * 0.55)
+    # frosted sugar leaves curling out between the nugs (they dominate a real cola's look)
+    for _ in range(int(10 + 210 * length * (radius / 0.04) ** 0.5)):
+        v = rng.uniform(0.0, 0.95) ** 0.8; a = rng.uniform(0, 2 * math.pi)
+        prof = math.sin(math.pi * min(1, v * 0.88 + 0.08)) ** 0.5 * (1 - 0.4 * v)
+        out = math.cos(a) * nn + math.sin(a) * bb
+        p = base + axis * (v * length) + out * radius * prof * 0.5
+        leaf_card(p, out * rng.uniform(0.6, 1.2) + axis * rng.uniform(0.5, 1.1),
+                  size=rng.uniform(0.03, 0.065) * (radius / 0.04) ** 0.6 * (0.6 + 0.4 * prof),
+                  droop=rng.uniform(0.15, 0.45), roll=rng.uniform(-1.2, 1.2), res=2, group="sugar")
 
 
-def leaf_card(base, direction, size, droop=0.35, roll=0.0, res=8):
+def leaf_card(base, direction, size, droop=0.35, roll=0.0, res=8, group="leaf"):
     """Fan-leaf card, texture bottom (petiole) at `base`, texture up along `direction`."""
     d = direction / np.linalg.norm(direction)
     side = np.cross(d, [0, 0, 1.0])
@@ -108,7 +139,7 @@ def leaf_card(base, direction, size, droop=0.35, roll=0.0, res=8):
         for i in range(res):
             a = j * (res + 1) + i; b = a + res + 1
             faces.append((a, a + 1, b + 1, b))
-    add("leaf", verts, faces, uvs)
+    add(group, verts, faces, uvs)
 
 
 def fan_leaf(node, az, size, lift=0.25):
@@ -202,7 +233,7 @@ for n_i, z in enumerate(nodes):
 
 # ---------------------------------------------------------------- build Blender objects + export
 bpy.ops.wm.read_factory_settings(use_empty=True)
-colors = {"stem": (0.25, 0.4, 0.15, 1), "leaf": (0.1, 0.35, 0.08, 1), "bud": (0.5, 0.6, 0.35, 1),
+colors = {"stem": (0.25, 0.4, 0.15, 1), "leaf": (0.1, 0.35, 0.08, 1), "bud": (0.5, 0.6, 0.35, 1), "pistil": (0.75, 0.32, 0.1, 1), "pistil_w": (0.9, 0.88, 0.8, 1), "sugar": (0.15, 0.4, 0.12, 1),
           "soil": (0.1, 0.08, 0.06, 1), "pot": (0.08, 0.08, 0.09, 1)}
 for name, g in geo.items():
     me = bpy.data.meshes.new(name)
@@ -217,5 +248,12 @@ for name, g in geo.items():
     me.materials.append(mat)
     ob = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(ob)
     print(name, len(g["v"]), "verts", len(g["f"]), "faces")
-bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", export_apply=True, export_yup=True)
-print("exported", OUT)
+# two files so each stays small enough to serve: the plant body, and the flower detail
+PARTS = {"": ("stem", "leaf", "soil", "pot"), "_buds": ("bud", "sugar"), "_hairs": ("pistil", "pistil_w")}
+for suffix, names in PARTS.items():
+    for ob in bpy.data.objects:
+        ob.select_set(ob.name in names)
+    path = OUT.replace(".glb", f"{suffix}.glb")
+    bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True, export_yup=True,
+                              use_selection=True, export_normals=False)  # viewer recomputes normals
+    print("exported", path)

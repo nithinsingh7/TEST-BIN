@@ -32,7 +32,16 @@ def job(mk, mat):
     res.update(model=mk, material=mat, wall_seconds=round(time.time() - t0, 1))
     print(mk, mat, res["ok"], res.get("error"), res.get("cost_usd"), res["wall_seconds"], flush=True)
     return res
-jobs = [(mk, mat) for mk in MODELS for mat in MATS]
+MATS.update({
+ "sugar": dict(kind="cutout", maps="height,roughness,translucency",
+   subject="a single cannabis sugar leaf from a flowering bud: one narrow, slightly curled, serrated leaflet, deep fresh green with a faint purple tint, densely coated with frosty white trichomes like sugar crystals",
+   notes="trichomes are tiny bright white frosty bulbs covering the whole surface; serrated edges"),
+ "bud2": dict(kind="tileable", maps="height,roughness",
+   subject="a macro close-up of a fresh, living cannabis flower on the plant (not dried): bright green swollen calyxes thickly frosted with white trichome heads, many wispy white and orange pistil hairs, small frosted sugar-leaf tips, faint purple hues",
+   notes="fresh green, not brown or beige; trichomes are tiny bright frosty bulbs; pistils are thin curly hairs"),
+})
+ONLY = sys.argv[3].split(",") if len(sys.argv) > 3 else list(MATS)
+jobs = [(mk, mat) for mk in MODELS for mat in MATS if mat in ONLY]
 with ThreadPoolExecutor(8) as ex:
     results = list(ex.map(lambda a: job(*a), jobs))
 json.dump(results, open(f"{OUT}/results.json", "w"), indent=1)
