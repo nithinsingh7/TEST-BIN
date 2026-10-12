@@ -1,0 +1,33 @@
+{
+ "winner": "gpt",
+ "summary": "Each model made the full set: fan leaf, frosted sugar leaf, fresh bud, stem and soil (17 images at 1K, same prompts and pipeline). Buds were regenerated as fresh living flower after the first round came out looking dried and beige; the first-round bud images are not in these totals. GPT Image 2.5 Sunburst is the most realistic and the only model with native transparency. Nano Banana 2.1 is the best value: about 35% cheaper, twice as fast and nearly as good. FLUX 3 drew the buds as a repeating grid of rosettes twice, and its height/roughness maps are mostly grayscale copies of the albedo. Qwen Image 3 Pro drew a whole fan leaf when asked for a single sugar leaf. Seedream 5.0 Pro refused the subject. All of this, including tests and retries, used $4.25 of OpenRouter credit.",
+ "models": {
+  "gpt": {
+   "id": "openai/gpt-image-2.5-sunburst",
+   "score": 4.5,
+   "notes": "Most realistic on every material: frosty green buds with orange pistils, purple-edged frosted sugar leaf, ridged hairy stem, varied soil. Height maps carry real relief. Only model with native transparency. Most expensive."
+  },
+  "gemini": {
+   "id": "google/gemini-nano-banana-2.1",
+   "score": 4,
+   "notes": "Best value and fastest (~45 s per material). Very natural fan leaf, excellent frosted sugar leaf, richest soil. Bud is vivid but a little cartoonish; stem height map has a rectangular glitch (structure 0.38)."
+  },
+  "flux": {
+   "id": "black-forest-labs/flux-3-image",
+   "score": 2.5,
+   "notes": "Good leaves and sugar leaf. Bud is the wrong subject in both rounds (a grid of succulent-like rosettes); stem looks like a barcode. Height/roughness are near-copies of the albedo. Its provider hit capacity limits (HTTP 429) and needed retries."
+  },
+  "qwen": {
+   "id": "qwen/qwen-image-3-pro",
+   "score": 3,
+   "notes": "Realistic fresh bud and decent soil. Drew a full fan leaf when asked for a single sugar leaf, and its fan-leaf translucency has disease-like blotches. Slowest (691 s)."
+  }
+ },
+ "blocked": [
+  {
+   "name": "Seedream 5.0 Pro",
+   "id": "bytedance-seed/seedream-5-0-pro",
+   "notes": "Refused at the first request: \"blocked this request through content moderation\" (the subject is cannabis). Not charged."
+  }
+ ]
+}

@@ -1,0 +1,352 @@
+{
+ "models": {
+  "gpt": "GPT Image 2.5 Sunburst",
+  "gemini": "Nano Banana 2.1",
+  "flux": "FLUX 3",
+  "qwen": "Qwen Image 3 Pro"
+ },
+ "materials": {
+  "gpt": {
+   "leaf": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 83.8,
+    "warnings": [],
+    "cost": 0.2387,
+    "api_seconds": 147.5,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9738,
+     "roughness": 0.9779,
+     "translucency": 0.9874
+    },
+    "structure": {
+     "height": 0.862,
+     "roughness": 0.806
+    }
+   },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 73.8,
+    "warnings": [],
+    "cost": 0.2389,
+    "api_seconds": 133.6,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9886,
+     "roughness": 0.9863,
+     "translucency": 0.9918
+    },
+    "structure": {
+     "height": 0.762,
+     "roughness": 0.829
+    }
+   },
+   "bud": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 114.7,
+    "warnings": [],
+    "cost": 0.1771,
+    "api_seconds": 155.4,
+    "images": 3,
+    "structure": {
+     "height": 0.87,
+     "roughness": 0.867
+    },
+    "seam_ratio_raw": 1.34
+   },
+   "stem": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 96.3,
+    "warnings": [],
+    "cost": 0.1769,
+    "api_seconds": 133.3,
+    "images": 3,
+    "structure": {
+     "height": 0.806,
+     "roughness": 0.808
+    },
+    "seam_ratio_raw": 1.51
+   },
+   "soil": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 111.3,
+    "warnings": [],
+    "cost": 0.1769,
+    "api_seconds": 148.3,
+    "images": 3,
+    "structure": {
+     "height": 0.836,
+     "roughness": 0.893
+    },
+    "seam_ratio_raw": 1.44
+   }
+  },
+  "gemini": {
+   "leaf": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 47.0,
+    "warnings": [],
+    "cost": 0.1523,
+    "api_seconds": 61.3,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9893,
+     "roughness": 0.9882,
+     "translucency": 0.9826
+    },
+    "structure": {
+     "height": 0.969,
+     "roughness": 0.955
+    }
+   },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 49.9,
+    "warnings": [],
+    "cost": 0.1587,
+    "api_seconds": 79.5,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9941,
+     "roughness": 0.9936,
+     "translucency": 0.994
+    },
+    "structure": {
+     "height": 0.838,
+     "roughness": 0.731
+    }
+   },
+   "bud": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 41.8,
+    "warnings": [],
+    "cost": 0.1166,
+    "api_seconds": 50.0,
+    "images": 3,
+    "structure": {
+     "height": 0.748,
+     "roughness": 0.96
+    },
+    "seam_ratio_raw": 2.04
+   },
+   "stem": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 37.4,
+    "warnings": [],
+    "cost": 0.1126,
+    "api_seconds": 46.1,
+    "images": 3,
+    "structure": {
+     "height": 0.379,
+     "roughness": 0.899
+    },
+    "seam_ratio_raw": 1.45
+   },
+   "soil": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 52.1,
+    "warnings": [],
+    "cost": 0.118,
+    "api_seconds": 59.4,
+    "images": 3,
+    "structure": {
+     "height": 0.857,
+     "roughness": 0.928
+    },
+    "seam_ratio_raw": 1.61
+   }
+  },
+  "flux": {
+   "leaf": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 96.8,
+    "warnings": [],
+    "cost": 0.192,
+    "api_seconds": 173.3,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9724,
+     "roughness": 0.9801,
+     "translucency": 0.9833
+    },
+    "structure": {
+     "height": 0.964,
+     "roughness": 0.786
+    }
+   },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 203.3,
+    "warnings": [],
+    "cost": 0.192,
+    "api_seconds": 203.3,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9839,
+     "roughness": 0.9922,
+     "translucency": 0.9918
+    },
+    "structure": {
+     "height": 0.895,
+     "roughness": 0.682
+    }
+   },
+   "bud": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 127.2,
+    "warnings": [],
+    "cost": 0.144,
+    "api_seconds": 127.2,
+    "images": 3,
+    "structure": {
+     "height": 0.977,
+     "roughness": 0.979
+    },
+    "seam_ratio_raw": 2.99
+   },
+   "stem": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 61.8,
+    "warnings": [],
+    "cost": 0.144,
+    "api_seconds": 89.3,
+    "images": 3,
+    "structure": {
+     "height": 0.934,
+     "roughness": 0.956
+    },
+    "seam_ratio_raw": 1.34
+   },
+   "soil": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 68.9,
+    "warnings": [],
+    "cost": 0.144,
+    "api_seconds": 100.9,
+    "images": 3,
+    "structure": {
+     "height": 0.987,
+     "roughness": 1.0
+    },
+    "seam_ratio_raw": 1.63
+   }
+  },
+  "qwen": {
+   "leaf": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 178.3,
+    "warnings": [],
+    "cost": 0.212,
+    "api_seconds": 264.2,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9782,
+     "roughness": 0.983,
+     "translucency": 0.9779
+    },
+    "structure": {
+     "height": 0.964,
+     "roughness": 0.895
+    }
+   },
+   "sugar": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 142.5,
+    "warnings": [],
+    "cost": 0.169,
+    "api_seconds": 254.9,
+    "images": 4,
+    "silhouette": {
+     "height": 0.9746,
+     "roughness": 0.9758,
+     "translucency": 0.9614
+    },
+    "structure": {
+     "height": 0.957,
+     "roughness": 0.672
+    }
+   },
+   "bud": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 142.3,
+    "warnings": [],
+    "cost": 0.126,
+    "api_seconds": 221.3,
+    "images": 3,
+    "structure": {
+     "height": 0.847,
+     "roughness": 0.926
+    },
+    "seam_ratio_raw": 2.74
+   },
+   "stem": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 99.9,
+    "warnings": [],
+    "cost": 0.126,
+    "api_seconds": 141.2,
+    "images": 3,
+    "structure": {
+     "height": 0.704,
+     "roughness": 0.675
+    },
+    "seam_ratio_raw": 1.76
+   },
+   "soil": {
+    "ok": true,
+    "error": null,
+    "wall_seconds": 127.7,
+    "warnings": [],
+    "cost": 0.126,
+    "api_seconds": 198.3,
+    "images": 3,
+    "structure": {
+     "height": 0.962,
+     "roughness": 0.964
+    },
+    "seam_ratio_raw": 1.98
+   }
+  }
+ },
+ "totals": {
+  "gpt": {
+   "cost": 1.0085,
+   "wall_seconds": 479.9,
+   "images": 17
+  },
+  "gemini": {
+   "cost": 0.6582,
+   "wall_seconds": 228.2,
+   "images": 17
+  },
+  "flux": {
+   "cost": 0.816,
+   "wall_seconds": 558.0,
+   "images": 17
+  },
+  "qwen": {
+   "cost": 0.759,
+   "wall_seconds": 690.7,
+   "images": 17
+  }
+ }
+}
